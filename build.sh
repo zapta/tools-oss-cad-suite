@@ -3,6 +3,9 @@
 #      oss cad suite Apio package builder   #
 #############################################
 
+# Exit on any error.
+set -e
+
 # Set english language for propper pattern matching
 export LC_ALL=C
 

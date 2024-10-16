@@ -2,3 +2,5 @@ _upstream/
 _packages/
 VERSION_BUILD
 .*s.swp
+.run.sh
+.DS_Store
