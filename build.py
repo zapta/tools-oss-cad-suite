@@ -291,7 +291,7 @@ def main():
     # -- Call the packager function to copy files from the yosys
     # -- dir to the output package dir.
     print(f"\nCalling packager function {platform_info.packager_function}")
-    print(f"  Source dir: {upstream_dir / "oss-cad-suite"}")
+    print(f"  Source dir: {upstream_dir / 'oss-cad-suite'}")
     print(f"  Dest dir:   {package_dir}")
     platform_info.packager_function(upstream_dir / "oss-cad-suite", package_dir)
 
