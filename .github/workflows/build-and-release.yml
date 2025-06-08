@@ -53,8 +53,8 @@ jobs:
 
       - name: Checkout this repo
         uses: actions/checkout@v4
-        with:
-          path: this-repo
+        # with:
+        #   path: this-repo
 
 
       # - name: Build package [darwin-arm64]
@@ -83,10 +83,9 @@ jobs:
 
       - name: Build package [windows-amd64]
         run: |
-          cd this-repo
           python ./build.py --platform windows-amd64 --version $RELEASE_VERSION
 
-          
+
       - name: List packages
         run: |
           ls -al _packages
