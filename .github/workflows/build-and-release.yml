@@ -86,6 +86,17 @@ jobs:
           cd this-repo
           python ./build.py --platform windows-amd64 --version $RELEASE_VERSION
 
+          
+      - name: List packages
+        run: |
+          ls -al _packages
+
+
+        # _packages/apio-oss-cad-suite-darwin-arm64-${{env.RELEASE_TAG}}.zip
+        # _packages/apio-oss-cad-suite-darwin-x86-64${{env.RELEASE_TAG}}.zip
+        # _packages/apio-oss-cad-suite-linux-x86-64-${{env.RELEASE_TAG}}.zip
+        # _packages/apio-oss-cad-suite-linux-aarch64-${{env.RELEASE_TAG}}.zip
+
 
       - name: Create the Release and upload files
         uses: softprops/action-gh-release@v2
@@ -93,11 +104,7 @@ jobs:
           tag_name: v${{env.RELEASE_TAG}}
           name: ${{env.RELEASE_TAG}}
           body: A new release (Draft)
-          files: |
-            # _packages/apio-oss-cad-suite-darwin-arm64-${{env.RELEASE_TAG}}.zip
-            # _packages/apio-oss-cad-suite-darwin-x86-64${{env.RELEASE_TAG}}.zip
-            # _packages/apio-oss-cad-suite-linux-x86-64-${{env.RELEASE_TAG}}.zip
-            # _packages/apio-oss-cad-suite-linux-aarch64-${{env.RELEASE_TAG}}.zip
+          files: 
             _packages/apio-oss-cad-suite-windows-amd64-${{env.RELEASE_TAG}}.zip
 
 
