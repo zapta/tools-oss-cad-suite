@@ -57,28 +57,28 @@ jobs:
           path: this-repo
 
 
-      - name: Build package [darwin-arm64]
-        run: |
-          cd this-repo
-          python ./build.py --platform darwin-arm64 --version $RELEASE_VERSION
+      # - name: Build package [darwin-arm64]
+      #   run: |
+      #     cd this-repo
+      #     python ./build.py --platform darwin-arm64 --version $RELEASE_VERSION
 
 
-      - name: Build package [darwin-x86-64]
-        run: |
-          cd this-repo
-          python ./build.py --platform darwin-x86-64 --version $RELEASE_VERSION
+      # - name: Build package [darwin-x86-64]
+      #   run: |
+      #     cd this-repo
+      #     python ./build.py --platform darwin-x86-64 --version $RELEASE_VERSION
 
 
-      - name: Build package [linux-x86-64]
-        run: |
-          cd this-repo
-          python ./build.py --platform linux-x86-64 --version $RELEASE_VERSION
+      # - name: Build package [linux-x86-64]
+      #   run: |
+      #     cd this-repo
+      #     python ./build.py --platform linux-x86-64 --version $RELEASE_VERSION
 
 
-      - name: Build package [linux-aarch64]
-        run: |
-          cd this-repo
-          python ./build.py --platform linux-aarch64 --version $RELEASE_VERSION
+      # - name: Build package [linux-aarch64]
+      #   run: |
+      #     cd this-repo
+      #     python ./build.py --platform linux-aarch64 --version $RELEASE_VERSION
 
 
       - name: Build package [windows-amd64]
@@ -94,10 +94,10 @@ jobs:
           name: ${{env.RELEASE_TAG}}
           body: A new release (Draft)
           files: |
-            _packages/apio-oss-cad-suite-darwin-arm64-${{env.RELEASE_TAG}}.tar.gz
-            _packages/apio-oss-cad-suite-darwin-x86-64${{env.RELEASE_TAG}}.tar.gz
-            _packages/apio-oss-cad-suite-linux-x86-64-${{env.RELEASE_TAG}}.tar.gz
-            _packages/apio-oss-cad-suite-linux-aarch64-${{env.RELEASE_TAG}}.tar.gz
-            _packages/apio-oss-cad-suite-windows-amd64-${{env.RELEASE_TAG}}.tar.gz
+            # _packages/apio-oss-cad-suite-darwin-arm64-${{env.RELEASE_TAG}}.zip
+            # _packages/apio-oss-cad-suite-darwin-x86-64${{env.RELEASE_TAG}}.zip
+            # _packages/apio-oss-cad-suite-linux-x86-64-${{env.RELEASE_TAG}}.zip
+            # _packages/apio-oss-cad-suite-linux-aarch64-${{env.RELEASE_TAG}}.zip
+            _packages/apio-oss-cad-suite-windows-amd64-${{env.RELEASE_TAG}}.zip
 
 
