@@ -178,13 +178,13 @@ PLATFORMS = {
         ["tar", "vzxf"],
         darwin_arm64_packager,
     ),
-    "darwin-x86_64": PlatformInfo(
+    "darwin-x86-64": PlatformInfo(
         "darwin-x64",
         "tgz",
         ["tar", "vzxf"],
         darwin_x86_64_packger,
     ),
-    "linux-x86_64": PlatformInfo(
+    "linux-x86-64": PlatformInfo(
         "linux-x64",
         "tgz",
         ["tar", "vzxf"],
