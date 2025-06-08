@@ -1,5 +1,10 @@
 """A Python script to build oss-cad-suite package for a given platform"""
 
+# This script is called from the github build workflow.
+#
+# Usage:
+#   python build.py --platform darwin_arm64  --version 2005.06.07
+
 import os
 import subprocess
 from dataclasses import dataclass
@@ -14,9 +19,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "--platform_id", required=True, type=str, help="ID of platform to build"
 )
-parser.add_argument(
-    "--version", required=True, type=str, help="Release version"
-)
+parser.add_argument("--version", required=True, type=str, help="Release version")
 
 args = parser.parse_args()
 
@@ -31,6 +34,18 @@ def run(cmd_args: List[str]) -> None:
     print("Run done\n")
 
 
+def rsync_yosys_package(yosys_dir: Path, package_dir: Path) -> None:
+    """Copy yosys package files to the destination package."""
+
+    # -- Check that yosys dir is not empty and package dir is.
+    assert any(yosys_dir.iterdir())
+    assert not any(package_dir.iterdir())
+
+    # -- Copy the package directory tree. We avoid 'cp' because
+    # -- it copies symlinks as files and inflates the package.
+    run(["rsync", "-a", f"{yosys_dir}/", f"{package_dir}/"])
+
+
 def check_package_executables(package_dir: Path, executables: List[str]) -> None:
     """Check that a few binaries exists and are executable."""
     for bin_file in executables:
@@ -43,13 +58,8 @@ def check_package_executables(package_dir: Path, executables: List[str]) -> None
 def darwin_arm64_packager(yosys_dir: Path, package_dir: Path) -> None:
     """Copy the files from yosys dir to our package dir."""
 
-    # -- Check that yosys dir is not empty and package dir is.
-    assert any(yosys_dir.iterdir())
-    assert not any(package_dir.iterdir())
-
-    # -- Copy the package directory tree. We avoid 'cp' because
-    # -- it copies symlinks as files and inflates the package.
-    run(["rsync", "-a", f"{yosys_dir}/", f"{package_dir}/"])
+    # -- Copy files.
+    rsync_yosys_package(yosys_dir, package_dir)
 
     # -- Check that a few binaries exists and are executable..
     check_package_executables(
@@ -68,16 +78,11 @@ def darwin_arm64_packager(yosys_dir: Path, package_dir: Path) -> None:
     assert (package_dir / "lib/libusb-1.0.0.dylib").is_file()
 
 
-def darwin_x86_64(yosys_dir: Path, package_dir: Path) -> None:
+def darwin_x86_64_packger(yosys_dir: Path, package_dir: Path) -> None:
     """Copy the files from yosys dir to our package dir."""
 
-    # -- Check that yosys dir is not empty and package dir is.
-    assert any(yosys_dir.iterdir())
-    assert not any(package_dir.iterdir())
-
-    # -- Copy the package directory tree. We avoid 'cp' because
-    # -- it copies symlinks as files and inflates the package.
-    run(["rsync", "-a", f"{yosys_dir}/", f"{package_dir}/"])
+    # -- Copy files.
+    rsync_yosys_package(yosys_dir, package_dir)
 
     # -- Check that a few binaries exists and are executable..
     check_package_executables(
@@ -94,6 +99,65 @@ def darwin_x86_64(yosys_dir: Path, package_dir: Path) -> None:
 
     # Check that the libusb backend exists. We use it to list USB devices.
     assert (package_dir / "lib/libusb-1.0.0.dylib").is_file()
+
+
+def linux_x86_64_packager(yosys_dir: Path, package_dir: Path) -> None:
+    """Copy the files from yosys dir to our package dir."""
+
+    # -- Copy files.
+    rsync_yosys_package(yosys_dir, package_dir)
+
+    # -- Check that a few binaries exists and are executable..
+    check_package_executables(
+        package_dir,
+        [
+            "bin/yosys",
+            "bin/nextpnr-ice40",
+            "bin/nextpnr-ecp5",
+            "bin/nextpnr-himbaechel",
+            "bin/dot",
+            "bin/gtkwave",
+        ],
+    )
+
+
+def linux_aarch64_packager(yosys_dir: Path, package_dir: Path) -> None:
+    """Copy the files from yosys dir to our package dir."""
+
+    # -- Copy files.
+    rsync_yosys_package(yosys_dir, package_dir)
+
+    # -- Check that a few binaries exists and are executable..
+    check_package_executables(
+        package_dir,
+        [
+            "bin/yosys",
+            "bin/nextpnr-ice40",
+            "bin/nextpnr-ecp5",
+            "bin/nextpnr-himbaechel",
+            "bin/dot",
+            "bin/gtkwave",
+        ],
+    )
+
+
+def windows_amd64_packager(yosys_dir: Path, package_dir: Path) -> None:
+    """Copy the files from yosys dir to our package dir."""
+
+    # -- Copy files.
+    rsync_yosys_package(yosys_dir, package_dir)
+
+    # -- Check that a few binaries exists and are executable..
+    check_package_executables(
+        package_dir,
+        [
+            "bin/yosys.exe",
+            "bin/nextpnr-ice40.exe",
+            "bin/nextpnr-ecp5.exe",
+            "bin/nextpnr-himbaechel.exe",
+            "bin/gtkwave.exe",
+        ],
+    )
 
 
 @dataclass(frozen=True)
@@ -108,35 +172,35 @@ class PlatformInfo:
 
 # -- Maps apio platform codes to their attributes.
 PLATFORMS = {
-    "darwin_arm64": PlatformInfo(
+    "darwin-arm64": PlatformInfo(
         "darwin-arm64",
         "tgz",
         ["tar", "vzxf"],
         darwin_arm64_packager,
     ),
-    "darwin_x86_64": PlatformInfo(
+    "darwin-x86_64": PlatformInfo(
         "darwin-x64",
         "tgz",
         ["tar", "vzxf"],
-        darwin_x86_64,
+        darwin_x86_64_packger,
     ),
-    "linux_x86_64": PlatformInfo(
+    "linux-x86_64": PlatformInfo(
         "linux-x64",
         "tgz",
         ["tar", "vzxf"],
-        None,
+        linux_x86_64_packager,
     ),
-    "linux_aarch64": PlatformInfo(
+    "linux-aarch64": PlatformInfo(
         "linux-arm64",
         "tgz",
         ["tar", "vzxf"],
-        None,
+        linux_aarch64_packager,
     ),
-    "windows_amd64": PlatformInfo(
+    "windows-amd64": PlatformInfo(
         "windows-x64",
         "exe",
         ["7x", "x"],
-        None,
+        windows_amd64_packager,
     ),
 }
 
