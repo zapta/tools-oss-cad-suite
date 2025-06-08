@@ -1,11 +1,22 @@
-# Packaging and Releasing the Tools-oss-cad-suite apio package.
-# The versions of the upstream oss-cad-suite packages and the
-# version of the packages release here are set in build.sh.
+# Daily build and release workflow.
+# The Yosys version that it picks is sets in build.py.
 
 name: build-and-release
 
-# Manual activation
-on: [workflow_dispatch]
+on:
+  # Run on each commit to this repo.
+  push:
+
+  # Run every day at 2AM.
+  schedule:
+    - cron: '0 2 * * *'
+
+  # Allow manual activations.
+  workflow_dispatch:
+
+permissions:
+  # Allow release creation
+  contents: write
 
 jobs:
 
