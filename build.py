@@ -5,6 +5,9 @@
 # Usage:
 #   python build.py --platform darwin_arm64  --version 2005.06.07
 
+# Install 7z on mac:
+#   brew install p7zip
+
 import os
 import subprocess
 from dataclasses import dataclass
@@ -199,7 +202,7 @@ PLATFORMS = {
     "windows-amd64": PlatformInfo(
         "windows-x64",
         "exe",
-        ["7x", "x"],
+        ["7z", "x"],
         windows_amd64_packager,
     ),
 }

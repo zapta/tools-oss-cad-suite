@@ -45,6 +45,12 @@ jobs:
           echo "RELEASE_TAG=$release_tag" >> $GITHUB_ENV
 
 
+      # Required by the build script to extracting windows .exe.
+      - name: Install p7zip (7z command)
+        run: |
+          sudo apt-get update && sudo apt-get install -y p7zip-full
+
+
       - name: Checkout this repo
         uses: actions/checkout@v4
         with:
