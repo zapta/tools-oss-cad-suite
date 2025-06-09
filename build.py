@@ -21,7 +21,12 @@ parser = argparse.ArgumentParser()
 
 
 parser.add_argument("--platform_id", required=True, type=str, help="Platform to build")
-parser.add_argument("--package-tag", required=True, type=str, help="Package file name tag")
+parser.add_argument(
+    "--package-tag", required=True, type=str, help="Package file name tag"
+)
+parser.add_argument(
+    "--build-info-file", required=True, type=str, help="Text file with build properties"
+)
 
 args = parser.parse_args()
 
@@ -46,6 +51,10 @@ def rsync_yosys_package(yosys_dir: Path, package_dir: Path) -> None:
     # -- Copy the package directory tree. We avoid 'cp' because
     # -- it copies symlinks as files and inflates the package.
     run(["rsync", "-a", f"{yosys_dir}/", f"{package_dir}/"])
+
+    # -- Rename VERSION to YOSYS-VERSION
+    # if (package_dir / "VERSION").exists():
+    (package_dir / "VERSION").rename(package_dir / "YOSYS-VERSION")
 
 
 def check_package_executables(package_dir: Path, executables: List[str]) -> None:
@@ -217,6 +226,7 @@ def main():
     print(f"  Platform ID:       {args.platform_id}")
     print(f"  Yosys tag:         {YOSYS_TAG}")
     print(f"  Package tag:       {args.package_tag}")
+    print(f"  Build info file:   {args.build_info_file}")
 
     # -- Map to Yosys's platform info
     platform_info = PLATFORMS[args.platform_id]
@@ -224,6 +234,10 @@ def main():
     # -- Save the start dir. It is assume to be at top of this repo.
     work_dir: Path = Path.cwd()
     print(f"\n{work_dir=}")
+
+    # -- Save absolute build info file path
+    build_info_path = Path(args.build_info_file).absolute()
+    print(f"{build_info_path=}")
 
     # --  Folder for storing the upstream packages
     upstream_dir: Path = work_dir / "_upstream" / args.platform_id
@@ -295,8 +309,15 @@ def main():
     print(f"  Dest dir:   {package_dir}")
     platform_info.packager_function(upstream_dir / "oss-cad-suite", package_dir)
 
-    # --
-    # TODO: Add BUILD-INFO file
+    # -- Add to the package an BUILD info file. Use the base info file
+    # -- and append to it the platform id property.
+    package_build_info = package_dir / "BUILD-INFO"
+    run(["cp", build_info_path, package_build_info])
+    with package_build_info.open("a") as f:
+        f.write(f"platform-id = {args.platform_id}\n")
+        f.write(f"yosys-tag = {YOSYS_TAG}\n")
+    run(["ls", "-al", package_dir])
+    run(["cat", "-n", package_build_info])
 
     # -- Zip the package. We run zip in a shell for the '*' glob to exapnd.
     print("Compressing the  package.")

@@ -50,6 +50,22 @@ jobs:
           echo $package_tag
           echo "PACKAGE_TAG=$package_tag" >> $GITHUB_ENV
 
+      - name: Create build info template file
+        run: |
+          out="BUILD-INFO"
+
+          echo "[apio-build-info]" >> ${out}
+          echo "package = apio-oss-cad-suit" >> ${out}
+          echo "time = $(date +'%Y-%m-%d %H:%M:%S %Z')" >> ${out}
+          echo "repo = ${{github.repository}}" >> ${out}
+          echo "workflow = ${{github.workflow}}" >> ${out}
+          echo "run-id = ${{github.run_id}}" >> ${out}
+          echo "run-number = ${{github.run_number}}" >> ${out}
+          echo "release-tag = $RELEASE_TAG" >> ${out}
+
+          ls -al
+          cat -n BUILD-INFO
+
 
       # Required by the build script to extracting windows .exe.
       - name: Install p7zip (7z command)
@@ -64,40 +80,72 @@ jobs:
 
       - name: Build package [darwin-arm64]
         run: |
-          python ./build.py --platform darwin-arm64 --package-tag $PACKAGE_TAG
+          python ./build.py \
+              --platform darwin-arm64 \
+              --package-tag $PACKAGE_TAG \
+              --build-info-file BUILD-INFO
 
 
       - name: Build package [darwin-x86-64]
         run: |
-          python ./build.py --platform darwin-x86-64 --package-tag $PACKAGE_TAG
+          python ./build.py \
+              --platform darwin-x86-64 \
+              --package-tag $PACKAGE_TAG \
+              --build-info-file BUILD-INFO
 
 
       - name: Build package [linux-x86-64]
         run: |
-          python ./build.py --platform linux-x86-64 --package-tag $PACKAGE_TAG
+          python ./build.py \
+              --platform linux-x86-64 \
+              --package-tag $PACKAGE_TAG \
+              --build-info-file BUILD-INFO
 
 
       - name: Build package [linux-aarch64]
         run: |
-          python ./build.py --platform linux-aarch64 --package-tag $PACKAGE_TAG
+          python ./build.py \
+              --platform linux-aarch64 \
+              --package-tag $PACKAGE_TAG \
+              --build-info-file BUILD-INFO
 
 
       - name: Build package [windows-amd64]
         run: |
-          python ./build.py --platform windows-amd64 --package-tag $PACKAGE_TAG
+          python ./build.py \
+              --platform windows-amd64 \
+              --package-tag $PACKAGE_TAG \
+              --build-info-file BUILD-INFO
 
 
       - name: List packages
         run: |
           ls -al _packages/*
 
-      # TODO: How to make this failing if any of the files is not uploaded.
+
+      - name: Prepare release text
+        run: |
+          out=RELEASE_BODY.txt
+          echo "This is an automated release-and-build of the Apio oss-cad-suite package." >> $out
+
+          echo -e "\n<br>\n" >> $out
+
+          echo "BUILD-INFO file:"
+          echo '```' >> $out
+          cat BUILD-INFO >> $out
+          echo '```' >> $out
+
+          echo -e "\n<br>\n" >> $out
+          cat -n $out
+
+
+      # TODO: How to make this fail if any of the files is not uploaded.
       - name: Create the Release and upload files
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{env.RELEASE_TAG}}
           name: ${{env.RELEASE_TAG}}
-          body: A new release (Draft)
+          body_path: RELEASE_BODY.txt
           files: |
             _packages/apio-oss-cad-suite-darwin-arm64-${{env.PACKAGE_TAG}}.zip
             _packages/apio-oss-cad-suite-darwin-x86-64-${{env.PACKAGE_TAG}}.zip
