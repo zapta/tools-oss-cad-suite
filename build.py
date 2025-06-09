@@ -187,25 +187,25 @@ PLATFORMS = {
     "darwin-arm64": PlatformInfo(
         "darwin-arm64",
         "tgz",
-        ["tar", "vzxf"],
+        ["tar", "zxf"],
         darwin_arm64_packager,
     ),
     "darwin-x86-64": PlatformInfo(
         "darwin-x64",
         "tgz",
-        ["tar", "vzxf"],
+        ["tar", "zxf"],
         darwin_x86_64_packger,
     ),
     "linux-x86-64": PlatformInfo(
         "linux-x64",
         "tgz",
-        ["tar", "vzxf"],
+        ["tar", "zxf"],
         linux_x86_64_packager,
     ),
     "linux-aarch64": PlatformInfo(
         "linux-arm64",
         "tgz",
-        ["tar", "vzxf"],
+        ["tar", "zxf"],
         linux_aarch64_packager,
     ),
     "windows-amd64": PlatformInfo(
