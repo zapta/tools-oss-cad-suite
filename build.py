@@ -139,6 +139,9 @@ def linux_x86_64_packager(yosys_dir: Path, package_dir: Path) -> None:
         ],
     )
 
+    # Check that the libusb backend exists. We use it to list USB devices.
+    assert (package_dir / "lib/libusb-1.0.so.0").is_file()
+
 
 def linux_aarch64_packager(yosys_dir: Path, package_dir: Path) -> None:
     """Copy the files from yosys dir to our package dir."""
@@ -159,6 +162,9 @@ def linux_aarch64_packager(yosys_dir: Path, package_dir: Path) -> None:
         ],
     )
 
+    # Check that the libusb backend exists. We use it to list USB devices.
+    assert (package_dir / "lib/libusb-1.0.so.0").is_file()
+
 
 def windows_amd64_packager(yosys_dir: Path, package_dir: Path) -> None:
     """Copy the files from yosys dir to our package dir."""
@@ -177,6 +183,9 @@ def windows_amd64_packager(yosys_dir: Path, package_dir: Path) -> None:
             "bin/gtkwave.exe",
         ],
     )
+
+    # Check that the libusb backend exists. We use it to list USB devices.
+    assert (package_dir / "lib/libusb-1.0.dll").is_file()
 
 
 @dataclass(frozen=True)
