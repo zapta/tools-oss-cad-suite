@@ -91,7 +91,7 @@ jobs:
         run: |
           ls -al _packages/*
 
-
+      # TODO: How to make this failing if any of the files is not uploaded.
       - name: Create the Release and upload files
         uses: softprops/action-gh-release@v2
         with:
