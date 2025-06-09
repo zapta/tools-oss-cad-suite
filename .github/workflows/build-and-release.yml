@@ -100,7 +100,7 @@ jobs:
           body: A new release (Draft)
           files: |
             _packages/apio-oss-cad-suite-darwin-arm64-${{env.PACKAGE_TAG}}.zip
-            _packages/apio-oss-cad-suite-darwin-x86-64${{env.PACKAGE_TAG}}.zip
+            _packages/apio-oss-cad-suite-darwin-x86-64-${{env.PACKAGE_TAG}}.zip
             _packages/apio-oss-cad-suite-linux-x86-64-${{env.PACKAGE_TAG}}.zip
             _packages/apio-oss-cad-suite-linux-aarch64-${{env.PACKAGE_TAG}}.zip
             _packages/apio-oss-cad-suite-windows-amd64-${{env.PACKAGE_TAG}}.zip
