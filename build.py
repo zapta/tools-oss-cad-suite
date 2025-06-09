@@ -19,10 +19,9 @@ from pathlib import Path
 # -- Command line options.
 parser = argparse.ArgumentParser()
 
-parser.add_argument(
-    "--platform_id", required=True, type=str, help="ID of platform to build"
-)
-parser.add_argument("--version", required=True, type=str, help="Release version")
+
+parser.add_argument("--platform_id", required=True, type=str, help="Platform to build")
+parser.add_argument("--package-tag", required=True, type=str, help="Package file name tag")
 
 args = parser.parse_args()
 
@@ -216,13 +215,13 @@ def main():
 
     print("\nPARAMS:")
     print(f"  Platform ID:       {args.platform_id}")
-    print(f"  Version:           {args.version}")
     print(f"  Yosys tag:         {YOSYS_TAG}")
+    print(f"  Package tag:       {args.package_tag}")
 
     # -- Map to Yosys's platform info
     platform_info = PLATFORMS[args.platform_id]
 
-    # -- Store the current dir
+    # -- Save the start dir. It is assume to be at top of this repo.
     work_dir: Path = Path.cwd()
     print(f"\n{work_dir=}")
 
@@ -231,7 +230,7 @@ def main():
     print(f"\n{upstream_dir=}")
     upstream_dir.mkdir(parents=True, exist_ok=True)
 
-    # -- Folder for storing the generated packages
+    # -- Folder for storing the generated package file.
     package_dir: Path = work_dir / "_packages" / args.platform_id
     print(f"\n{package_dir=}")
     package_dir.mkdir(parents=True, exist_ok=True)
@@ -240,9 +239,9 @@ def main():
     parts = [
         "apio-oss-cad-suite",
         "-",
-        args.platform_id.replace("_", "-"),
+        args.platform_id,
         "-",
-        args.version.replace(".", "-"),
+        args.package_tag,
         ".zip",
     ]
     package_filename = "".join(parts)
@@ -275,8 +274,6 @@ def main():
     # -- Download the Yosys file.
     print(f"\nChanging to UPSTREAM_DIR: {str(upstream_dir)}")
     os.chdir(upstream_dir)
-
-    # -- Download the source package (non verbose)
     print(f"\nDownloading {yosys_url}")
     run(["wget", "-nv", yosys_url])
     run(["ls", "-al"])
@@ -316,6 +313,7 @@ def main():
     os.chdir(work_dir)
     print(f"{Path.cwd()=}")
     run(["ls", "-al"])
+    run(["ls", "-al", "_packages"])
     assert (Path("_packages") / package_filename).is_file()
 
     # -- All done

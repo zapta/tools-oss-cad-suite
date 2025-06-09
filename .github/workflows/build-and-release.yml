@@ -29,20 +29,26 @@ jobs:
     steps:
 
 
-      # Release version: e.g. 0.1.2
-      - name: Determine release version
-        run: |
-          release_version="$(date +'%Y.%m.%d')"
-          echo $release_version
-          echo "RELEASE_VERSION=$release_version" >> $GITHUB_ENV
+      # # E.g.  "2025.11.2"
+      # - name: Determine release version
+      #   run: |
+      #     release_version="$(date +'+%Y.%-m.%-d')"
+      #     echo $release_version
+      #     echo "RELEASE_VERSION=$release_version" >> $GITHUB_ENV
 
-
-      # Release version: e.g. 0-1-2
+      # E.g. "2025-11-02"
       - name: Determine release tag
         run: |
-          release_tag="${RELEASE_VERSION//./-}"
+          release_tag="$(date +'+%Y-%m-%d')"
           echo $release_tag
           echo "RELEASE_TAG=$release_tag" >> $GITHUB_ENV
+
+      # E.g. "2025-11-02"
+      - name: Determine package tag
+        run: |
+          package_tag="${RELEASE_TAG//-/}"
+          echo $package_tag
+          echo "PACKAGE_TAG=$package_tag" >> $GITHUB_ENV
 
 
       # Required by the build script to extracting windows .exe.
@@ -56,38 +62,34 @@ jobs:
         uses: actions/checkout@v4
 
 
-
       - name: Build package [darwin-arm64]
         run: |
-          python ./build.py --platform darwin-arm64 --version $RELEASE_VERSION
+          python ./build.py --platform darwin-arm64 --package-tag $PACKAGE_TAG
 
 
       - name: Build package [darwin-x86-64]
         run: |
-          python ./build.py --platform darwin-x86-64 --version $RELEASE_VERSION
+          python ./build.py --platform darwin-x86-64 --package-tag $PACKAGE_TAG
 
 
       - name: Build package [linux-x86-64]
         run: |
-          python ./build.py --platform linux-x86-64 --version $RELEASE_VERSION
+          python ./build.py --platform linux-x86-64 --package-tag $PACKAGE_TAG
 
 
       - name: Build package [linux-aarch64]
         run: |
-          python ./build.py --platform linux-aarch64 --version $RELEASE_VERSION
+          python ./build.py --platform linux-aarch64 --package-tag $PACKAGE_TAG
 
 
       - name: Build package [windows-amd64]
         run: |
-          python ./build.py --platform windows-amd64 --version $RELEASE_VERSION
+          python ./build.py --platform windows-amd64 --package-tag $PACKAGE_TAG
 
 
       - name: List packages
         run: |
           ls -al _packages
-
-
-
 
 
       - name: Create the Release and upload files
@@ -96,11 +98,11 @@ jobs:
           tag_name: v${{env.RELEASE_TAG}}
           name: ${{env.RELEASE_TAG}}
           body: A new release (Draft)
-          files: 
-            _packages/apio-oss-cad-suite-darwin-arm64-${{env.RELEASE_TAG}}.zip
-            _packages/apio-oss-cad-suite-darwin-x86-64${{env.RELEASE_TAG}}.zip
-            _packages/apio-oss-cad-suite-linux-x86-64-${{env.RELEASE_TAG}}.zip
-            _packages/apio-oss-cad-suite-linux-aarch64-${{env.RELEASE_TAG}}.zip
-            _packages/apio-oss-cad-suite-windows-amd64-${{env.RELEASE_TAG}}.zip
+          files:
+            _packages/apio-oss-cad-suite-darwin-arm64-${{env.PACKAGE_TAG}}.zip
+            _packages/apio-oss-cad-suite-darwin-x86-64${{env.PACKAGE_TAG}}.zip
+            _packages/apio-oss-cad-suite-linux-x86-64-${{env.PACKAGE_TAG}}.zip
+            _packages/apio-oss-cad-suite-linux-aarch64-${{env.PACKAGE_TAG}}.zip
+            _packages/apio-oss-cad-suite-windows-amd64-${{env.PACKAGE_TAG}}.zip
 
 
