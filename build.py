@@ -48,9 +48,10 @@ def rsync_yosys_package(yosys_dir: Path, package_dir: Path) -> None:
     assert any(yosys_dir.iterdir())
     assert not any(package_dir.iterdir())
 
-    # -- Copy the package directory tree. We avoid 'cp' because
-    # -- it copies symlinks as files and inflates the package.
-    run(["rsync", "-a", f"{yosys_dir}/", f"{package_dir}/"])
+    # -- Copy the package directory tree. We avoid 'cp' because it copies 
+    # -- symlinks as files and inflates the package.
+    # -- The flag 'q' is for quiet.
+    run(["rsync", "-aq", f"{yosys_dir}/", f"{package_dir}/"])
 
     # -- Rename VERSION to YOSYS-VERSION
     # if (package_dir / "VERSION").exists():
