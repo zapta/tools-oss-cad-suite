@@ -74,6 +74,7 @@ jobs:
           echo "run-id = ${{github.run_id}}" >> ${out}
           echo "run-number = ${{github.run_number}}" >> ${out}
           echo "release-tag = $RELEASE_TAG" >> ${out}
+          echo "package-tag = $PACKAGE_TAG" >> ${out}
 
           ls -al
           cat -n _work/BUILD-INFO
