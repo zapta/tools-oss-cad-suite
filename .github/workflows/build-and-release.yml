@@ -89,7 +89,7 @@ jobs:
 
       - name: List packages
         run: |
-          ls -al _packages
+          ls -al _packages/*
 
 
       - name: Create the Release and upload files
