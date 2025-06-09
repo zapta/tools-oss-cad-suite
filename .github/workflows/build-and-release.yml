@@ -32,14 +32,14 @@ jobs:
       # # E.g.  "2025.11.2"
       # - name: Determine release version
       #   run: |
-      #     release_version="$(date +'+%Y.%-m.%-d')"
+      #     release_version="$(date +'%Y.%-m.%-d')"
       #     echo $release_version
       #     echo "RELEASE_VERSION=$release_version" >> $GITHUB_ENV
 
       # E.g. "2025-11-02"
       - name: Determine release tag
         run: |
-          release_tag="$(date +'+%Y-%m-%d')"
+          release_tag="$(date +'%Y-%m-%d')"
           echo $release_tag
           echo "RELEASE_TAG=$release_tag" >> $GITHUB_ENV
 
