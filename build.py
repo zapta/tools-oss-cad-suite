@@ -8,7 +8,7 @@
 import os
 import subprocess
 from dataclasses import dataclass
-from typing import List, Callable
+from typing import List, Callable, Union
 import argparse
 import shutil
 from pathlib import Path
@@ -33,13 +33,18 @@ parser.add_argument(
 args = parser.parse_args()
 
 # -- This is the version of Yosys we pick.
-YOSYS_TAG = "2025-06-08"
+YOSYS_RELEASE_TAG = "2025-06-08"
+
+# -- The tag as placed in the file name.
+YOSYS_FILE_TAG = YOSYS_RELEASE_TAG.replace("-", "")
 
 
-def run(cmd_args: List[str]) -> None:
-    """Run a command and check that it succeeded."""
+def run(cmd_args: Union[List[str], str], shell: bool = False) -> None:
+    """Run a command and check that it succeeded. Select shell=true to enable
+    shell features such as '*' glob."""
     print(f"\nRun: {cmd_args}")
-    subprocess.run(cmd_args, check=True)
+    print(f"{shell=}")
+    subprocess.run(cmd_args, check=True, shell=shell)
     print("Run done\n")
 
 
@@ -50,7 +55,7 @@ def rsync_yosys_package(yosys_dir: Path, package_dir: Path) -> None:
     assert any(yosys_dir.iterdir())
     assert not any(package_dir.iterdir())
 
-    # -- Copy the package directory tree. We avoid 'cp' because it copies 
+    # -- Copy the package directory tree. We avoid 'cp' because it copies
     # -- symlinks as files and inflates the package.
     # -- The flag 'q' is for 'quiet'.
     run(["rsync", "-aq", f"{yosys_dir}/", f"{package_dir}/"])
@@ -92,7 +97,7 @@ def darwin_arm64_packager(yosys_dir: Path, package_dir: Path) -> None:
     assert (package_dir / "lib/libusb-1.0.0.dylib").is_file()
 
 
-def darwin_x86_64_packger(yosys_dir: Path, package_dir: Path) -> None:
+def darwin_x86_64_packager(yosys_dir: Path, package_dir: Path) -> None:
     """Copy the files from yosys dir to our package dir."""
 
     # -- Copy files.
@@ -178,8 +183,7 @@ def windows_amd64_packager(yosys_dir: Path, package_dir: Path) -> None:
 class PlatformInfo:
     """Represents the properties of a platform."""
 
-    yosys_platform_id: str
-    yosys_file_ext: str
+    yosys_fname: str
     unarchive_cmd: List[str]
     packager_function: Callable[[Path, Path], None]
 
@@ -187,32 +191,27 @@ class PlatformInfo:
 # -- Maps apio platform codes to their attributes.
 PLATFORMS = {
     "darwin-arm64": PlatformInfo(
-        "darwin-arm64",
-        "tgz",
+        f"oss-cad-suite-darwin-arm64-{YOSYS_FILE_TAG}.tgz",
         ["tar", "zxf"],
         darwin_arm64_packager,
     ),
     "darwin-x86-64": PlatformInfo(
-        "darwin-x64",
-        "tgz",
+        f"oss-cad-suite-darwin-x64-{YOSYS_FILE_TAG}.tgz",
         ["tar", "zxf"],
-        darwin_x86_64_packger,
+        darwin_x86_64_packager,
     ),
     "linux-x86-64": PlatformInfo(
-        "linux-x64",
-        "tgz",
+        f"oss-cad-suite-linux-x64-{YOSYS_FILE_TAG}.tgz",
         ["tar", "zxf"],
         linux_x86_64_packager,
     ),
     "linux-aarch64": PlatformInfo(
-        "linux-arm64",
-        "tgz",
+        f"oss-cad-suite-linux-arm64-{YOSYS_FILE_TAG}.tgz",
         ["tar", "zxf"],
         linux_aarch64_packager,
     ),
     "windows-amd64": PlatformInfo(
-        "windows-x64",
-        "exe",
+        f"oss-cad-suite-windows-x64-{YOSYS_FILE_TAG}.exe",
         ["7z", "x"],
         windows_amd64_packager,
     ),
@@ -222,21 +221,25 @@ PLATFORMS = {
 def main():
     """Builds the Apio oss-cad-suite package for one platform."""
 
+    # pylint: disable=too-many-statements
+
     # -- Print build parameters
     print("Apio oss-cad-suite builder")
 
     print("\nPARAMS:")
-    print(f"  Platform ID:       {args.platform_id}")
-    print(f"  Yosys tag:         {YOSYS_TAG}")
-    print(f"  Package tag:       {args.package_tag}")
-    print(f"  Build info file:   {args.build_info_file}")
-
-    # -- Map to Yosys's platform info
-    platform_info = PLATFORMS[args.platform_id]
+    print(f"  Platform ID:         {args.platform_id}")
+    print(f"  Yosys release tag:   {YOSYS_RELEASE_TAG}")
+    print(f"  Yosys file tag:      {YOSYS_FILE_TAG}")
+    print(f"  Package tag:         {args.package_tag}")
+    print(f"  Build info file:     {args.build_info_file}")
 
     # -- Save the start dir. It is assume to be at top of this repo.
     work_dir: Path = Path.cwd()
     print(f"\n{work_dir=}")
+
+    # -- Map to Yosys's platform info
+    platform_info = PLATFORMS[args.platform_id]
+    print(f"\n{platform_info=}")
 
     # -- Save absolute build info file path
     build_info_path = Path(args.build_info_file).absolute()
@@ -261,31 +264,18 @@ def main():
         args.platform_id,
         "-",
         args.package_tag,
-        ".zip",
+        ".tar.gz",
     ]
     package_filename = "".join(parts)
     print(f"\n{package_filename=}")
-
-    # -- Construct Yosys file name
-    parts = [
-        "oss-cad-suite",
-        "-",
-        platform_info.yosys_platform_id,
-        "-",
-        YOSYS_TAG.replace("-", ""),
-        ".",
-        platform_info.yosys_file_ext,
-    ]
-    yosys_fname = "".join(parts)
-    print(f"\n{yosys_fname=}")
 
     # -- Construct Yosys URL
     parts = [
         "https://github.com/YosysHQ/oss-cad-suite-build/releases/download",
         "/",
-        YOSYS_TAG,
+        YOSYS_RELEASE_TAG,
         "/",
-        yosys_fname,
+        platform_info.yosys_fname,
     ]
     yosys_url = "".join(parts)
     print(f"\n{yosys_url=}")
@@ -299,12 +289,12 @@ def main():
 
     # -- Uncompress the yosys archive
     print("Uncompressing the Yosys file")
-    run(platform_info.unarchive_cmd + [yosys_fname])
+    run(platform_info.unarchive_cmd + [platform_info.yosys_fname])
     run(["ls", "-al"])
 
-    # -- Delete the Yosys archive, we don't need it anymore
+    # -- Delete the Yosys archive (large).
     print("Deleting the Yosys archive file")
-    Path(yosys_fname).unlink()
+    Path(platform_info.yosys_fname).unlink()
     run(["ls", "-al"])
 
     # -- Call the packager function to copy files from the yosys
@@ -320,25 +310,22 @@ def main():
     run(["cp", build_info_path, package_build_info])
     with package_build_info.open("a") as f:
         f.write(f"platform-id = {args.platform_id}\n")
-        f.write(f"yosys-tag = {YOSYS_TAG}\n")
+        f.write(f"yosys-tag = {YOSYS_RELEASE_TAG}\n")
     run(["ls", "-al", package_dir])
     run(["cat", "-n", package_build_info])
 
-    # -- Zip the package. We run zip in a shell for the '*' glob to exapnd.
+    # -- Compress the package. We run it in the shell for '*" to expand.
     print("Compressing the  package.")
     os.chdir(package_dir)
-    print(f"{Path.cwd()=}")
-    # -- The flag 'q' is for 'quiet'.
-    zip_cmd = f"zip -qr ../{package_filename} *"
-    subprocess.run(zip_cmd, shell=True, check=True)
+    run(f"tar zcf ../{package_filename} ./*", shell=True)
 
-    # -- Delete the package dir
+    # -- Delete the package dir (large)
     print(f"\nDeleting package dir {package_dir}")
     shutil.rmtree(package_dir)
 
     # -- Final check
     os.chdir(work_dir)
-    print(f"{Path.cwd()=}")
+    print(f"\n{Path.cwd()=}")
     run(["ls", "-al"])
     run(["ls", "-al", "_packages"])
     assert (Path("_packages") / package_filename).is_file()
