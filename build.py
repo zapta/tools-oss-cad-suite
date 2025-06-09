@@ -50,7 +50,7 @@ def rsync_yosys_package(yosys_dir: Path, package_dir: Path) -> None:
 
     # -- Copy the package directory tree. We avoid 'cp' because it copies 
     # -- symlinks as files and inflates the package.
-    # -- The flag 'q' is for quiet.
+    # -- The flag 'q' is for 'quiet'.
     run(["rsync", "-aq", f"{yosys_dir}/", f"{package_dir}/"])
 
     # -- Rename VERSION to YOSYS-VERSION
@@ -326,7 +326,8 @@ def main():
     print("Compressing the  package.")
     os.chdir(package_dir)
     print(f"{Path.cwd()=}")
-    zip_cmd = f"zip -r ../{package_filename} *"
+    # -- The flag 'q' is for 'quiet'.
+    zip_cmd = f"zip -qr ../{package_filename} *"
     subprocess.run(zip_cmd, shell=True, check=True)
 
     # -- Delete the package dir
