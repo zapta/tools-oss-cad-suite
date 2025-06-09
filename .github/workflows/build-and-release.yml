@@ -36,7 +36,7 @@ jobs:
           echo $release_tag
           echo "RELEASE_TAG=$release_tag" >> $GITHUB_ENV
 
-      # E.g. "2025-11-02"
+      # E.g. "20251102"
       - name: Determine package tag
         run: |
           package_tag="${RELEASE_TAG//-/}"
@@ -60,7 +60,7 @@ jobs:
           out="_work/BUILD-INFO"
 
           echo "[apio-build-info]" >> ${out}
-          echo "package = apio-oss-cad-suit" >> ${out}
+          echo "package = oss-cad-suite" >> ${out}
           echo "time = $(date +'%Y-%m-%d %H:%M:%S %Z')" >> ${out}
           echo "repo = ${{github.repository}}" >> ${out}
           echo "workflow = ${{github.workflow}}" >> ${out}
