@@ -1,11 +1,8 @@
-"""A Python script to build oss-cad-suite package for a given platform"""
+"""A Python script to build the oss-cad-suite package for a given platform"""
 
 # This script is called from the github build workflow.
 #
-# Usage:
-#   python build.py --platform darwin_arm64  --version 2005.06.07
-
-# Install 7z on mac:
+# To install 7z on mac:
 #   brew install p7zip
 
 import os
@@ -20,10 +17,15 @@ from pathlib import Path
 parser = argparse.ArgumentParser()
 
 
+# The platform id. E.g. "darwin-arm64"
 parser.add_argument("--platform_id", required=True, type=str, help="Platform to build")
+
+# The the package file tag. E.g "20250608".
 parser.add_argument(
     "--package-tag", required=True, type=str, help="Package file name tag"
 )
+
+# Path to the properties file with the build info.
 parser.add_argument(
     "--build-info-file", required=True, type=str, help="Text file with build properties"
 )
