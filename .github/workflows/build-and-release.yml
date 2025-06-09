@@ -136,14 +136,17 @@ jobs:
 
 
       # TODO: How to make this fail if any of the files is not uploaded.
+      # See https://github.com/softprops/action-gh-release
       - name: Create the Release and upload files
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{env.RELEASE_TAG}}
           name: ${{env.RELEASE_TAG}}
           body_path: RELEASE_BODY.txt
+          preserve_order: true
+          fail_on_unmatched_files: true
           files: |
-            _packages/apio-oss-cad-suite-darwin-arm64-${{env.PACKAGE_TAG}}.tar.gz
+            x_packages/apio-oss-cad-suite-darwin-arm64-${{env.PACKAGE_TAG}}.tar.gz
             _packages/apio-oss-cad-suite-darwin-x86-64-${{env.PACKAGE_TAG}}.tar.gz
             _packages/apio-oss-cad-suite-linux-x86-64-${{env.PACKAGE_TAG}}.tar.gz
             _packages/apio-oss-cad-suite-linux-aarch64-${{env.PACKAGE_TAG}}.tar.gz
