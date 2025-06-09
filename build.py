@@ -239,6 +239,7 @@ def main():
     # -- Save absolute build info file path
     build_info_path = Path(args.build_info_file).absolute()
     print(f"{build_info_path=}")
+    assert build_info_path.exists()
     assert build_info_path.is_file()
 
     # --  Folder for storing the upstream packages

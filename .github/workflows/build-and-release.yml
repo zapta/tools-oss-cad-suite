@@ -50,6 +50,17 @@ jobs:
           echo $package_tag
           echo "PACKAGE_TAG=$package_tag" >> $GITHUB_ENV
 
+      # Required by the build script to extracting windows .exe.
+      - name: Install p7zip (7z command)
+        run: |
+          sudo apt-get update && sudo apt-get install -y p7zip-full
+
+
+      # Check out the this repo in the workflow work directory.
+      - name: Checkout this repo
+        uses: actions/checkout@v4
+
+
       - name: Create build info template file
         run: |
           out="BUILD-INFO"
@@ -66,20 +77,10 @@ jobs:
           ls -al
           cat -n BUILD-INFO
 
-
-      # Required by the build script to extracting windows .exe.
-      - name: Install p7zip (7z command)
-        run: |
-          sudo apt-get update && sudo apt-get install -y p7zip-full
-
-
-      # Check out the this repo in the workflow work directory.
-      - name: Checkout this repo
-        uses: actions/checkout@v4
-
-
       - name: Build package [darwin-arm64]
         run: |
+          pwd
+          ls -al
           python ./build.py \
               --platform darwin-arm64 \
               --package-tag $PACKAGE_TAG \
