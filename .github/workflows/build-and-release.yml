@@ -146,7 +146,7 @@ jobs:
           preserve_order: true
           fail_on_unmatched_files: true
           files: |
-            x_packages/apio-oss-cad-suite-darwin-arm64-${{env.PACKAGE_TAG}}.tar.gz
+            _packages/apio-oss-cad-suite-darwin-arm64-${{env.PACKAGE_TAG}}.tar.gz
             _packages/apio-oss-cad-suite-darwin-x86-64-${{env.PACKAGE_TAG}}.tar.gz
             _packages/apio-oss-cad-suite-linux-x86-64-${{env.PACKAGE_TAG}}.tar.gz
             _packages/apio-oss-cad-suite-linux-aarch64-${{env.PACKAGE_TAG}}.tar.gz
