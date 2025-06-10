@@ -62,13 +62,11 @@ jobs:
           echo "  \"name\": \"oss-cad-suite\"," >> ${out}
           echo "  \"description\": \"Yosys tools for Apio\"," >> ${out}
           echo "  \"version\": \"$RELEASE_TAG\"," >> ${out}
-          # echo "  \"target-platform\": \"all\"" >> ${out}
           echo "  \"build-repo\": \"${{github.repository}}\"," >> ${out}
           echo "  \"workflow\": \"${{github.workflow}}\"," >> ${out}
           echo "  \"workflow-run\": \"${{github.run_id}}\"," >> ${out}
           echo "  \"time\": \"$(date +'%Y-%m-%d %H:%M:%S %Z')\"," >> ${out}
           echo "  \"commit\": \"$RELEASE_COMMIT\"" >> ${out}
-          # echo "  \"file-name\": \"$PACKAGE_NAME\"" >> ${out}
 
           echo "}" >> ${out}
 
