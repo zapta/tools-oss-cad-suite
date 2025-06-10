@@ -253,7 +253,7 @@ def main():
     platform_info = PLATFORMS[args.platform_id]
     print(f"\n{platform_info=}")
 
-    # -- Save absolute build info file path
+    # -- Save absolute input package.json file path
     input_json_file = Path(args.package_json).absolute()
     print(f"{input_json_file=}")
     assert input_json_file.exists()
@@ -316,7 +316,7 @@ def main():
     print(f"  Dest dir:   {package_dir}")
     platform_info.packager_function(upstream_dir / "oss-cad-suite", package_dir)
 
-    # -- Add to the package an BUILD info file. Use the base info file
+    # -- Add to the package a package.json file. Use the base info file
     # -- and append to it the platform id property.
     with input_json_file.open("r", encoding="utf-8") as f:
         json_data = json.load(f)
