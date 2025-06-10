@@ -53,6 +53,11 @@ jobs:
       - name: Checkout this repo
         uses: actions/checkout@v4
 
+      - name: Determine last commit
+        run: |
+          commit=$(git rev-parse HEAD)
+          echo $commit
+          echo "RELEASE_COMMIT=$commit" >> $GITHUB_ENV
 
       - name: Create the package.json file
         run: |
