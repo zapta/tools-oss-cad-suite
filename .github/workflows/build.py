@@ -1,8 +1,8 @@
 """A Python script to build the oss-cad-suite package for a given platform"""
 
-# This script is called from the github build workflow and it uses
-# the ./_upstream and ./_packages directories for input and output files
-# respectively.
+# This script is called from the github build workflow and and runs 
+# in the top dir of this repo. it uses ./_upstream and ./_packages
+# directories for input and output files respectively.
 #
 # To install 7z on mac:
 #   brew install p7zip

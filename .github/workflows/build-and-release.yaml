@@ -83,7 +83,7 @@ jobs:
         run: |
           pwd
           ls -al
-          python ./build.py \
+          python .github/workflows/build.py \
               --platform darwin-arm64 \
               --package-tag $PACKAGE_TAG \
               --package-json package.json
@@ -91,7 +91,7 @@ jobs:
 
       - name: Build package [darwin-x86-64]
         run: |
-          python ./build.py \
+          python .githug/workflows/build.py \
               --platform darwin-x86-64 \
               --package-tag $PACKAGE_TAG \
               --package-json package.json
@@ -99,7 +99,7 @@ jobs:
 
       - name: Build package [linux-x86-64]
         run: |
-          python ./build.py \
+          python .githug/workflows/build.py \
               --platform linux-x86-64 \
               --package-tag $PACKAGE_TAG \
               --package-json package.json
@@ -107,7 +107,7 @@ jobs:
 
       - name: Build package [linux-aarch64]
         run: |
-          python ./build.py \
+          python .githug/workflows/build.py \
               --platform linux-aarch64 \
               --package-tag $PACKAGE_TAG \
               --package-json package.json
@@ -115,7 +115,7 @@ jobs:
 
       - name: Build package [windows-amd64]
         run: |
-          python ./build.py \
+          python .githug/workflows/build.py \
               --platform windows-amd64 \
               --package-tag $PACKAGE_TAG \
               --package-json package.json
