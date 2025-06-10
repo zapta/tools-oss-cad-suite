@@ -53,7 +53,7 @@ jobs:
       - name: Checkout this repo
         uses: actions/checkout@v4
 
-        
+
       - name: Create the package.json file
         run: |
           out="package.json"
@@ -61,13 +61,13 @@ jobs:
           echo "{" >> ${out}
           echo "  \"name\": \"examples\"," >> ${out}
           echo "  \"description\": \"Apio examples package\"," >> ${out}
-          echo "  \"version\": \"$RELEASE_TAG\"" >> ${out}
+          echo "  \"version\": \"$RELEASE_TAG\"," >> ${out}
           # echo "  \"target-platform\": \"all\"" >> ${out}
           echo "  \"build-repo\": \"${{github.repository}}\"," >> ${out}
           echo "  \"workflow\": \"${{github.workflow}}\"," >> ${out}
           echo "  \"workflow-run\": \"${{github.run_id}}\"," >> ${out}
           echo "  \"time\": \"$(date +'%Y-%m-%d %H:%M:%S %Z')\"," >> ${out}
-          echo "  \"commit\": \"$RELEASE_COMMIT\"," >> ${out}
+          echo "  \"commit\": \"$RELEASE_COMMIT\"" >> ${out}
           # echo "  \"file-name\": \"$PACKAGE_NAME\"" >> ${out}
 
           echo "}" >> ${out}

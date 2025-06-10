@@ -321,9 +321,10 @@ def main():
     with input_json_file.open("r", encoding="utf-8") as f:
         json_data = json.load(f)
 
-    # Add a new field
+    # Add platform specific fields.
     json_data["target-platform"] = args.platform_id
     json_data["yosys-tag"] = YOSYS_RELEASE_TAG
+    json_data["file-name"] = package_filename
 
     # Write updated data to a new file
     output_json_file = package_dir / "package.json"
