@@ -53,24 +53,27 @@ jobs:
       - name: Checkout this repo
         uses: actions/checkout@v4
 
-
-      - name: Create build info template file
+        
+      - name: Create the package.json file
         run: |
-          mkdir _work
-          out="_work/BUILD-INFO"
+          out="package.json"
 
-          echo "[apio-build-info]" >> ${out}
-          echo "package = oss-cad-suite" >> ${out}
-          echo "time = $(date +'%Y-%m-%d %H:%M:%S %Z')" >> ${out}
-          echo "repo = ${{github.repository}}" >> ${out}
-          echo "workflow = ${{github.workflow}}" >> ${out}
-          echo "run-id = ${{github.run_id}}" >> ${out}
-          echo "run-number = ${{github.run_number}}" >> ${out}
-          echo "release-tag = $RELEASE_TAG" >> ${out}
-          echo "package-tag = $PACKAGE_TAG" >> ${out}
+          echo "{" >> ${out}
+          echo "  \"name\": \"examples\"," >> ${out}
+          echo "  \"description\": \"Apio examples package\"," >> ${out}
+          echo "  \"version\": \"$RELEASE_TAG\"" >> ${out}
+          # echo "  \"target-platform\": \"all\"" >> ${out}
+          echo "  \"build-repo\": \"${{github.repository}}\"," >> ${out}
+          echo "  \"workflow\": \"${{github.workflow}}\"," >> ${out}
+          echo "  \"workflow-run\": \"${{github.run_id}}\"," >> ${out}
+          echo "  \"time\": \"$(date +'%Y-%m-%d %H:%M:%S %Z')\"," >> ${out}
+          echo "  \"commit\": \"$RELEASE_COMMIT\"," >> ${out}
+          # echo "  \"file-name\": \"$PACKAGE_NAME\"" >> ${out}
+
+          echo "}" >> ${out}
 
           ls -al
-          cat -n _work/BUILD-INFO
+          cat -n package.json
 
       - name: Build package [darwin-arm64]
         run: |
@@ -79,7 +82,7 @@ jobs:
           python ./build.py \
               --platform darwin-arm64 \
               --package-tag $PACKAGE_TAG \
-              --build-info-file _work/BUILD-INFO
+              --package-json package.json
 
 
       - name: Build package [darwin-x86-64]
@@ -87,7 +90,7 @@ jobs:
           python ./build.py \
               --platform darwin-x86-64 \
               --package-tag $PACKAGE_TAG \
-              --build-info-file _work/BUILD-INFO
+              --package-json package.json
 
 
       - name: Build package [linux-x86-64]
@@ -95,7 +98,7 @@ jobs:
           python ./build.py \
               --platform linux-x86-64 \
               --package-tag $PACKAGE_TAG \
-              --build-info-file _work/BUILD-INFO
+              --package-json package.json
 
 
       - name: Build package [linux-aarch64]
@@ -103,7 +106,7 @@ jobs:
           python ./build.py \
               --platform linux-aarch64 \
               --package-tag $PACKAGE_TAG \
-              --build-info-file _work/BUILD-INFO
+              --package-json packages.json
 
 
       - name: Build package [windows-amd64]
@@ -111,7 +114,7 @@ jobs:
           python ./build.py \
               --platform windows-amd64 \
               --package-tag $PACKAGE_TAG \
-              --build-info-file _work/BUILD-INFO
+              --package-json packages.json
 
 
       - name: List packages
@@ -126,9 +129,9 @@ jobs:
 
           echo -e "\n<br>\n" >> $out
 
-          echo "BUILD-INFO file:"
+          echo "package.json" >> $out
           echo '```' >> $out
-          cat _work/BUILD-INFO >> $out
+          cat package.json >> $out
           echo '```' >> $out
 
           echo -e "\n<br>\n" >> $out

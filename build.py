@@ -8,6 +8,7 @@
 #   brew install p7zip
 
 import os
+import json
 import subprocess
 from dataclasses import dataclass
 from typing import List, Callable, Union
@@ -29,7 +30,7 @@ parser.add_argument(
 
 # Path to the properties file with the build info.
 parser.add_argument(
-    "--build-info-file", required=True, type=str, help="Text file with build properties"
+    "--package-json", required=True, type=str, help="JSON with build properties"
 )
 
 args = parser.parse_args()
@@ -242,7 +243,7 @@ def main():
     print(f"  Yosys release tag:   {YOSYS_RELEASE_TAG}")
     print(f"  Yosys file tag:      {YOSYS_FILE_TAG}")
     print(f"  Package tag:         {args.package_tag}")
-    print(f"  Build info file:     {args.build_info_file}")
+    print(f"  Package json file:   {args.package_json}")
 
     # -- Save the start dir. It is assume to be at top of this repo.
     work_dir: Path = Path.cwd()
@@ -253,10 +254,10 @@ def main():
     print(f"\n{platform_info=}")
 
     # -- Save absolute build info file path
-    build_info_path = Path(args.build_info_file).absolute()
-    print(f"{build_info_path=}")
-    assert build_info_path.exists()
-    assert build_info_path.is_file()
+    input_json_file = Path(args.package_json).absolute()
+    print(f"{input_json_file=}")
+    assert input_json_file.exists()
+    assert input_json_file.is_file()
 
     # --  Folder for storing the upstream packages
     upstream_dir: Path = work_dir / "_upstream" / args.platform_id
@@ -317,13 +318,20 @@ def main():
 
     # -- Add to the package an BUILD info file. Use the base info file
     # -- and append to it the platform id property.
-    package_build_info = package_dir / "BUILD-INFO"
-    run(["cp", build_info_path, package_build_info])
-    with package_build_info.open("a") as f:
-        f.write(f"platform-id = {args.platform_id}\n")
-        f.write(f"yosys-tag = {YOSYS_RELEASE_TAG}\n")
+    with input_json_file.open("r", encoding="utf-8") as f:
+        json_data = json.load(f)
+
+    # Add a new field
+    json_data["target-platform"] = args.platform_id
+    json_data["yosys-tag"] = YOSYS_RELEASE_TAG
+
+    # Write updated data to a new file
+    output_json_file = package_dir / "package.json"
+    with output_json_file.open("w", encoding="utf-8") as f:
+        json.dump(json_data, f, indent=2)
+        f.write("\n")  # Ensure the file ends with a newline
     run(["ls", "-al", package_dir])
-    run(["cat", "-n", package_build_info])
+    run(["cat", "-n", output_json_file])
 
     # -- Compress the package. We run it in the shell for '*" to expand.
     print("Compressing the  package.")
