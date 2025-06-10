@@ -72,6 +72,7 @@ jobs:
 
           echo "}" >> ${out}
 
+          pwd
           ls -al
           cat -n package.json
 
@@ -106,7 +107,7 @@ jobs:
           python ./build.py \
               --platform linux-aarch64 \
               --package-tag $PACKAGE_TAG \
-              --package-json packages.json
+              --package-json package.json
 
 
       - name: Build package [windows-amd64]
@@ -114,7 +115,7 @@ jobs:
           python ./build.py \
               --platform windows-amd64 \
               --package-tag $PACKAGE_TAG \
-              --package-json packages.json
+              --package-json package.json
 
 
       - name: List packages
