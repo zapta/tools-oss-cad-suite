@@ -6,11 +6,6 @@
 #
 # To install 7z on mac:
 #   brew install p7zip
-#
-# IMPORTANT:
-# Multiple instance of this file, for different platform ids should
-# be able to run in the same repo with no conflict. This allows
-# to parallelized the build job.
 
 import os
 import json
