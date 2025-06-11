@@ -156,7 +156,7 @@ jobs:
 
           echo -e "\n<br>\n" >> $out
 
-          echo "build-info.json" >> $out
+          echo "build info" >> $out
           echo '```' >> $out
           tr -d '",{}' < build-info.json >> $out
           echo '```' >> $out
