@@ -6,6 +6,11 @@
 #
 # To install 7z on mac:
 #   brew install p7zip
+#
+# IMPORTANT:
+# Multiple instance of this file, for different platform ids should
+# be able to run in the same repo with no conflict. This allows
+# to parallelized the build job.
 
 import os
 import json
@@ -292,9 +297,11 @@ def main():
     yosys_url = "".join(parts)
     print(f"\n{yosys_url=}")
 
-    # -- Download the Yosys file.
+    # --  Change to upstream dir.
     print(f"\nChanging to UPSTREAM_DIR: {str(upstream_dir)}")
     os.chdir(upstream_dir)
+
+    # -- Download the Yosys file.
     print(f"\nDownloading {yosys_url}")
     run(["wget", "-nv", yosys_url])
     run(["ls", "-al"])
@@ -333,7 +340,7 @@ def main():
     run(["ls", "-al", package_dir])
     run(["cat", "-n", output_json_file])
 
-    # Format the json file
+    # Format the json file in the package dir
     run(["json-align", "--in-place", "--spaces", "2", output_json_file])
     run(["ls", "-al", package_dir])
     run(["cat", "-n", output_json_file])
@@ -347,8 +354,9 @@ def main():
     print(f"\nDeleting package dir {package_dir}")
     shutil.rmtree(package_dir)
 
-    # -- Final check
-    os.chdir(work_dir)
+    # -- Final check, at the repo root which is common
+    # -- to all the platforms.
+    os.chdir(work_dir)  #
     print(f"\n{Path.cwd()=}")
     run(["ls", "-al"])
     run(["ls", "-al", "_packages"])
