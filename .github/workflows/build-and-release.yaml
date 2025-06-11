@@ -78,8 +78,6 @@ jobs:
           cat -n build-info.json
 
          
-
-
       # This tool is used also by build.py
       - name: Format build info
         run: |
@@ -90,8 +88,6 @@ jobs:
 
       - name: Build package [darwin-arm64]
         run: |
-          pwd
-          ls -al
           python .github/workflows/build.py \
               --platform darwin-arm64 \
               --package-tag $PACKAGE_TAG \
