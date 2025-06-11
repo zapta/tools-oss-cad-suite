@@ -71,7 +71,7 @@ jobs:
             "workflow-run-id":  "${{github.run_id}}",
             "workflow-run-number": "${{github.run_number}}",
             "build-time":  "$(date +'%Y-%m-%d %H:%M:%S %Z')",
-            "commit":  "$RELEASE_COMMIT",
+            "commit":  "$RELEASE_COMMIT"
           }
           EOF
           
