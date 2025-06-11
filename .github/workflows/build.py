@@ -1,6 +1,6 @@
 """A Python script to build the oss-cad-suite package for a given platform"""
 
-# This script is called from the github build workflow and and runs 
+# This script is called from the github build workflow and and runs
 # in the top dir of this repo. it uses ./_upstream and ./_packages
 # directories for input and output files respectively.
 #
@@ -30,7 +30,7 @@ parser.add_argument(
 
 # Path to the properties file with the build info.
 parser.add_argument(
-    "--package-json", required=True, type=str, help="JSON with build properties"
+    "--build-info-json", required=True, type=str, help="JSON with build properties"
 )
 
 args = parser.parse_args()
@@ -243,7 +243,7 @@ def main():
     print(f"  Yosys release tag:   {YOSYS_RELEASE_TAG}")
     print(f"  Yosys file tag:      {YOSYS_FILE_TAG}")
     print(f"  Package tag:         {args.package_tag}")
-    print(f"  Package json file:   {args.package_json}")
+    print(f"  Build info file:     {args.package_json}")
 
     # -- Save the start dir. It is assume to be at top of this repo.
     work_dir: Path = Path.cwd()
@@ -253,8 +253,8 @@ def main():
     platform_info = PLATFORMS[args.platform_id]
     print(f"\n{platform_info=}")
 
-    # -- Save absolute input package.json file path
-    input_json_file = Path(args.package_json).absolute()
+    # -- Save absolute input build-info.json file path
+    input_json_file = Path(args.build_info_json).absolute()
     print(f"{input_json_file=}")
     assert input_json_file.exists()
     assert input_json_file.is_file()
@@ -316,8 +316,7 @@ def main():
     print(f"  Dest dir:   {package_dir}")
     platform_info.packager_function(upstream_dir / "oss-cad-suite", package_dir)
 
-    # -- Add to the package a package.json file. Use the base info file
-    # -- and append to it the platform id property.
+    # -- Read the build info json
     with input_json_file.open("r", encoding="utf-8") as f:
         json_data = json.load(f)
 
@@ -327,10 +326,15 @@ def main():
     json_data["file-name"] = package_filename
 
     # Write updated data to a new file
-    output_json_file = package_dir / "package.json"
+    output_json_file = package_dir / "build-info.json"
     with output_json_file.open("w", encoding="utf-8") as f:
         json.dump(json_data, f, indent=2)
         f.write("\n")  # Ensure the file ends with a newline
+    run(["ls", "-al", package_dir])
+    run(["cat", "-n", output_json_file])
+
+    # Format the json file
+    run(["json-align", "--in-place", "--spaces", "2", "", output_json_file])
     run(["ls", "-al", package_dir])
     run(["cat", "-n", output_json_file])
 

@@ -59,25 +59,48 @@ jobs:
           echo $commit
           echo "RELEASE_COMMIT=$commit" >> $GITHUB_ENV
 
-      - name: Create the package.json file
+      - name: Create the build-info.json file
         run: |
-          out="package.json"
+          cat > build-info.json <<EOF
+          {
+            "name":  "oss-cad-suite",
+            "description" : "Yosys tools for Apio",
+            "version":  "$RELEASE_TAG",
+            "build-repo":  "${{github.repository}}",
+            "build-workflow":  "${{ github.workflow }}",
+            "workflow-run-id":  "${{github.run_id}}",
+            "workflow-run-number": "${{github.run_number}}",
+            "build-time":  "$(date +'%Y-%m-%d %H:%M:%S %Z')",
+            "commit":  "RELEASE_COMMIT",
+            "file-name":  "$PACKAGE_NAME"
+          }
+          EOF
+          
+          cat -n build-info.json
 
-          echo "{" >> ${out}
-          echo "  \"name\": \"oss-cad-suite\"," >> ${out}
-          echo "  \"description\": \"Yosys tools for Apio\"," >> ${out}
-          echo "  \"version\": \"$RELEASE_TAG\"," >> ${out}
-          echo "  \"build-repo\": \"${{github.repository}}\"," >> ${out}
-          echo "  \"workflow\": \"${{github.workflow}}\"," >> ${out}
-          echo "  \"workflow-run\": \"${{github.run_id}}\"," >> ${out}
-          echo "  \"time\": \"$(date +'%Y-%m-%d %H:%M:%S %Z')\"," >> ${out}
-          echo "  \"commit\": \"$RELEASE_COMMIT\"" >> ${out}
+          # echo "{" >> ${out}
+          # echo "  \"name\": \"oss-cad-suite\"," >> ${out}
+          # echo "  \"description\": \"Yosys tools for Apio\"," >> ${out}
+          # echo "  \"version\": \"$RELEASE_TAG\"," >> ${out}
+          # echo "  \"build-repo\": \"${{github.repository}}\"," >> ${out}
+          # echo "  \"workflow\": \"${{github.workflow}}\"," >> ${out}
+          # echo "  \"workflow-run\": \"${{github.run_id}}\"," >> ${out}
+          # echo "  \"time\": \"$(date +'%Y-%m-%d %H:%M:%S %Z')\"," >> ${out}
+          # echo "  \"commit\": \"$RELEASE_COMMIT\"" >> ${out}
 
-          echo "}" >> ${out}
+          # # echo "}" >> ${out}
 
-          pwd
-          ls -al
-          cat -n package.json
+          # ls -al
+          # cat -n build-info.json
+
+
+      # This tool is used also by build.py
+      - name: Format build info
+        run: |
+          npm install -g json-align
+          json-align --in-place --spaces 2 build-info.json
+          cat -n build-info.json
+
 
       - name: Build package [darwin-arm64]
         run: |
@@ -86,7 +109,7 @@ jobs:
           python .github/workflows/build.py \
               --platform darwin-arm64 \
               --package-tag $PACKAGE_TAG \
-              --package-json package.json
+              --build-info-json build-info.json
 
 
       - name: Build package [darwin-x86-64]
@@ -94,7 +117,7 @@ jobs:
           python .github/workflows/build.py \
               --platform darwin-x86-64 \
               --package-tag $PACKAGE_TAG \
-              --package-json package.json
+              --build-info-json build-info.json
 
 
       - name: Build package [linux-x86-64]
@@ -102,7 +125,7 @@ jobs:
           python .github/workflows/build.py \
               --platform linux-x86-64 \
               --package-tag $PACKAGE_TAG \
-              --package-json package.json
+              --build-info-json build-info.json
 
 
       - name: Build package [linux-aarch64]
@@ -110,7 +133,7 @@ jobs:
           python .github/workflows/build.py \
               --platform linux-aarch64 \
               --package-tag $PACKAGE_TAG \
-              --package-json package.json
+              --build-info-json build-info.json
 
 
       - name: Build package [windows-amd64]
@@ -118,7 +141,7 @@ jobs:
           python .github/workflows/build.py \
               --platform windows-amd64 \
               --package-tag $PACKAGE_TAG \
-              --package-json package.json
+              --build-info-json build-info.json
 
 
       - name: List packages
@@ -133,9 +156,9 @@ jobs:
 
           echo -e "\n<br>\n" >> $out
 
-          echo "package.json" >> $out
+          echo "build-info.json" >> $out
           echo '```' >> $out
-          cat package.json >> $out
+          cat build-info.json >> $out
           echo '```' >> $out
 
           echo -e "\n<br>\n" >> $out
