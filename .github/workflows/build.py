@@ -335,7 +335,6 @@ def main():
 
     # Format the json file
     run(["json-align", "--in-place", "--spaces", "2", output_json_file])
-    # run(["json-align", "--in-place", "--spaces", "2", "", output_json_file], shell=True)
     run(["ls", "-al", package_dir])
     run(["cat", "-n", output_json_file])
 

@@ -164,6 +164,13 @@ jobs:
           echo -e "\n<br>\n" >> $out
           cat -n $out
 
+          
+      # In case we overwrite and exiting release.
+      - name: Force tag update
+        run: |
+          git tag -f ${{env.RELEASE_TAG}}
+          git push origin -f ${{env.RELEASE_TAG}}
+
 
       - name: Create the Release and upload files
         uses: softprops/action-gh-release@v2.2.2
