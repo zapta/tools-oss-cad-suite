@@ -72,7 +72,6 @@ jobs:
             "workflow-run-number": "${{github.run_number}}",
             "build-time":  "$(date +'%Y-%m-%d %H:%M:%S %Z')",
             "commit":  "RELEASE_COMMIT",
-            "file-name":  "$PACKAGE_NAME"
           }
           EOF
           
