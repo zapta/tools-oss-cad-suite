@@ -158,13 +158,13 @@ jobs:
 
           echo "build-info.json" >> $out
           echo '```' >> $out
-          cat build-info.json >> $out
+          tr -d '",{}' < build-info.json >> $out
           echo '```' >> $out
 
           echo -e "\n<br>\n" >> $out
           cat -n $out
 
-          
+
       # In case we overwrite and exiting release.
       - name: Force tag update
         run: |
