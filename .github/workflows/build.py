@@ -243,7 +243,7 @@ def main():
     print(f"  Yosys release tag:   {YOSYS_RELEASE_TAG}")
     print(f"  Yosys file tag:      {YOSYS_FILE_TAG}")
     print(f"  Package tag:         {args.package_tag}")
-    print(f"  Build info file:     {args.package_json}")
+    print(f"  Build info file:     {args.build_info_json}")
 
     # -- Save the start dir. It is assume to be at top of this repo.
     work_dir: Path = Path.cwd()
