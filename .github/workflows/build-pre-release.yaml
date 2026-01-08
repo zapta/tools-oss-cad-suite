@@ -1,6 +1,6 @@
 # Daily build and release workflow.
 
-name: build-and-release
+name: build-pre-release
 
 on:
   # Runs daily at UTC midnight to minimize risk of overstepping
@@ -27,7 +27,7 @@ env:
 jobs:
   # -- Build packages for all supported architectures and
   # -- export them in a release.
-  build-and-release:
+  build-pre-release:
     runs-on: ubuntu-22.04
 
     steps:
