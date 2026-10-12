@@ -40,9 +40,9 @@ jobs:
 
       # TODO: Delete this step when switching to windows .tgz upstream packages.
       # https://github.com/zapta/tools-oss-cad-suite/commit/58143058ba6ca439d4bca6769a71fbe8e902bd50
-      - name: Install p7zip (7z command)
-        run: |
-          sudo apt-get update && sudo apt-get install -y p7zip-full
+      # - name: Install p7zip (7z command)
+      #   run: |
+      #     sudo apt-get update && sudo apt-get install -y p7zip-full
 
 
       - name: Checkout this repo
