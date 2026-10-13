@@ -88,18 +88,18 @@ def ice40_parts(suite):
                 parts[f"{stem}-{package}{id_suffix}"] = {
                     # "part-num": part_num,
                     # "family": family,
-                    "generated": True,
-                    "definition": {
-                        "arch": "ice40",
-                        "vendor-part": vendor_part,
-                        "size": ICE40_TYPES[nextpnr_type][2],
-                        "ice40-params": {
-                            "nextpnr-type": nextpnr_type,
-                            "nextpnr-package": nextpnr_package,
-                        },
+                    # "generated": True,
+                    # "definition": {
+                    "arch": "ice40",
+                    "vendor-part": vendor_part,
+                    "size": ICE40_TYPES[nextpnr_type][2],
+                    "ice40-params": {
+                        "nextpnr-type": nextpnr_type,
+                        "nextpnr-package": nextpnr_package,
                     },
+                    # },
                 }
-    return parts
+    return (parts, 0)
 
 
 # =========================== ECP5 ===========================
@@ -131,19 +131,19 @@ def ecp5_parts(suite):
             parts[vendor_part.lower()] = {
                 # "part-num": part_num,
                 # "family": series,
-                "generated": True,
-                "definition": {
-                    "arch": "ecp5",
-                    "vendor-part": vendor_part,
-                    "size": f"{luts}k",
-                    "ecp5-params": {
-                        "nextpnr-type": f"{type_prefix}{luts}k",
-                        "nextpnr-package": package,
-                        "nextpnr-speed": speed,
-                    },
+                # "generated": True,
+                # "definition": {
+                "arch": "ecp5",
+                "vendor-part": vendor_part,
+                "size": f"{luts}k",
+                "ecp5-params": {
+                    "nextpnr-type": f"{type_prefix}{luts}k",
+                    "nextpnr-package": package,
+                    "nextpnr-speed": speed,
                 },
+                # },
             }
-    return parts
+    return (parts, 0)
 
 
 # =========================== GOWIN ===========================
@@ -206,6 +206,7 @@ def gowin_parts(suite):
     # -- nextpnr needs the family of a device that shares parts with another.
     shared = {d for devs in candidates.values() if len(devs) > 1 for d in devs}
 
+    skipped = 0
     parts = {}
     for vendor_part, devs in sorted(candidates.items()):
         if len(devs) > 1:
@@ -215,23 +216,28 @@ def gowin_parts(suite):
                     f"gowin {vendor_part}: add a device to GOWIN_PREFERRED_DEVICES"
                 )
         device = devs[0]
+        if device in GOWIN_UNUSABLE:
+            print(f"Skipping gowin device {device}")
+            skipped += 1
+            continue
+
         parts[vendor_part.lower().replace("/", "-")] = {
             # "part-num": part,
             # "family": part.split("-")[0],
-            "generated": device not in GOWIN_UNUSABLE,
-            "definition": {
-                "arch": "gowin",
-                "vendor-part": vendor_part,
-                "size": GOWIN_SIZE[device],
-                "gowin-params": {
-                    "yosys-family": gowin_yosys_family(device),
-                    "nextpnr-device": vendor_part,
-                    "nextpnr-family": device if device in shared else "",
-                    "packer-device": device,
-                },
+            # "generated": device not in GOWIN_UNUSABLE,
+            # "definition": {
+            "arch": "gowin",
+            "vendor-part": vendor_part,
+            "size": GOWIN_SIZE[device],
+            "gowin-params": {
+                "yosys-family": gowin_yosys_family(device),
+                "nextpnr-device": vendor_part,
+                "nextpnr-family": device if device in shared else "",
+                "packer-device": device,
             },
+            # },
         }
-    return parts
+    return (parts, skipped)
 
 
 # =========================== MACHXO2 ===========================
@@ -310,19 +316,42 @@ NOTES = {
 }
 
 
-def generate(suite)->dict[str, dict]:
+def generate(suite) -> dict[str, dict]:
     """Returns fpga definitions."""
     fpgas_definitions = {}
-    for arch, parts_function in (
-        ("ice40", ice40_parts),
-        ("ecp5", ecp5_parts),
-        ("gowin", gowin_parts),
-        # ("machxo2", machxo2_parts),
-    ):
-        parts = dict(sorted(parts_function(suite).items()))
+
+    architectures = {
+        "ice40": ice40_parts,
+        "ecp5": ecp5_parts,
+        "gowin": gowin_parts,
+    }
+
+    prefix_lines = [
+        "// Automatically generated, do not edit!",
+        "// Contains base FPGA definitions for the Apio's architectures "
+        + ", ".join(architectures.keys())
+        + ".",
+        "//",
+    ]
+
+    for arch, parts_function in architectures.items():
+        #     ("ice40", ice40_parts),
+        #     ("ecp5", ecp5_parts),
+        #     ("gowin", gowin_parts),
+        #     # ("machxo2", machxo2_parts),
+        # ):
+
+        parts, skipped = parts_function(suite)
         bad_ids = [i for i in parts if not ID_FORMAT.match(i)]
-        if not parts or bad_ids:
+        if bad_ids or not parts:
             sys.exit(f"{arch}: no parts or invalid ids {bad_ids}")
+        prefix_lines.extend(
+            [
+                f"// {arch}",
+                f"//    Skipped   : {skipped}",
+                f"//    Generated : {len(parts)}",
+            ]
+        )
         for fpga_id, fpga_definition in parts.items():
             assert fpga_id not in fpga_definition, f"Duplicate fpga_id: {fpga_id}"
             fpgas_definitions[fpga_id] = fpga_definition
@@ -355,6 +384,7 @@ def download_suite(yosys_release_tag):
     (work_dir / fname).unlink()
     return work_dir / "oss-cad-suite"
 
+
 def main():
     """Main function."""
     # parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
@@ -370,7 +400,7 @@ def main():
     fpgas_definitions = generate(suite)
     args.out.mkdir(parents=True, exist_ok=True)
     # for arch, data in fpgas_definitions.items():
-        # json_file = args.out / f"{arch.upper()}-PARTS-INDEX.json"
+    # json_file = args.out / f"{arch.upper()}-PARTS-INDEX.json"
     json_file = args.out / "FPGAS.jsonc"
     print(f"Writing file {str(json_file)}")
     write_json_file(json_file, fpgas_definitions)
