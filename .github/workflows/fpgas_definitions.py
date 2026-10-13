@@ -58,6 +58,9 @@ ICE40_OVERSIZED = {"lp4k": "lp8k", "hx4k": "hx8k"}
 
 
 def ice40_parts(suite):
+    """Generated ice40 fpga definitions"""
+    # pylint: disable=too-many-locals
+
     dies = {}
     for path in (suite / "share/icebox").glob("chipdb-*.txt"):
         lines = path.read_text(encoding="utf-8").splitlines()
@@ -65,7 +68,7 @@ def ice40_parts(suite):
         dies[die] = {x.split()[1] for x in lines if x.startswith(".pins ")}
 
     parts = {}
-    for type_, (die_spec, family, _, packages) in ICE40_TYPES.items():
+    for type_, (die_spec, _, _, packages) in ICE40_TYPES.items():
         die, _, suffix = die_spec.partition(":")
         # -- The iCE5LP types (u1k, u2k, u4k) spell 'ice5lp<size>'.
         stem = (
@@ -109,6 +112,7 @@ ECP5_PACKAGE_CODE = {"CABGA": "BG", "CSFBGA": "MG", "TQFP": "TG"}
 
 
 def ecp5_parts(suite):
+    """Generate ecp5 fpga definitions."""
     database = suite / "share/trellis/database"
     devices = json.loads((database / "devices.json").read_text(encoding="utf-8"))
     parts = {}
@@ -183,6 +187,7 @@ def dump_gowin():
 
 
 def gowin_parts(suite):
+    """Generate gowin fpga definitions."""
     output = subprocess.run(
         [str(suite / "bin/tabbypy3"), __file__, "--dump-gowin"],
         check=True,
@@ -305,9 +310,9 @@ NOTES = {
 }
 
 
-def generate(suite, release_tag):
-    """Returns {arch: json_data}."""
-    json_data = {}
+def generate(suite)->dict[str, dict]:
+    """Returns fpga definitions."""
+    fpgas_definitions = {}
     for arch, parts_function in (
         ("ice40", ice40_parts),
         ("ecp5", ecp5_parts),
@@ -318,20 +323,24 @@ def generate(suite, release_tag):
         bad_ids = [i for i in parts if not ID_FORMAT.match(i)]
         if not parts or bad_ids:
             sys.exit(f"{arch}: no parts or invalid ids {bad_ids}")
-        json_data[arch] = {
-            "schema": 8,
-            "date": release_tag.replace("-", ""),
-            "release-tag": release_tag,
-            "part-count": len(parts),
-            "generated-count": sum(p["generated"] for p in parts.values()),
-            "note": NOTES[arch],
-            "parts": parts,
-        }
-    return json_data
+        for fpga_id, fpga_definition in parts.items():
+            assert fpga_id not in fpga_definition, f"Duplicate fpga_id: {fpga_id}"
+            fpgas_definitions[fpga_id] = fpga_definition
+        # fpgas_definitions[arch] = {
+        #     "schema": 8,
+        #     "date": release_tag.replace("-", ""),
+        #     "release-tag": release_tag,
+        #     "part-count": len(parts),
+        #     "generated-count": sum(p["generated"] for p in parts.values()),
+        #     "note": NOTES[arch],
+        #     "parts": parts,
+        # }
+    return fpgas_definitions
 
 
-def write_json_file(path, data):
-    path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+def write_json_file(path, json_dict):
+    """Write a json file."""
+    path.write_text(json.dumps(json_dict, indent=2) + "\n", encoding="utf-8")
 
 
 def download_suite(yosys_release_tag):
@@ -346,9 +355,10 @@ def download_suite(yosys_release_tag):
     (work_dir / fname).unlink()
     return work_dir / "oss-cad-suite"
 
-
 def main():
-    parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    """Main function."""
+    # parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    parser = argparse.ArgumentParser()
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument("--yosys-release-tag", help="YosysHQ release to download")
     source.add_argument("--suite", type=Path, help="an extracted oss-cad-suite")
@@ -357,12 +367,14 @@ def main():
     args = parser.parse_args()
 
     suite = args.suite or download_suite(args.yosys_release_tag)
-    json_data = generate(suite, args.release_tag)
+    fpgas_definitions = generate(suite)
     args.out.mkdir(parents=True, exist_ok=True)
-    for arch, data in json_data.items():
-        json_file = args.out / f"{arch.upper()}-PARTS-INDEX.json"
-        write_json_file(json_file, data)
-        print(f"{json_file}: {data['part-count']} parts")
+    # for arch, data in fpgas_definitions.items():
+        # json_file = args.out / f"{arch.upper()}-PARTS-INDEX.json"
+    json_file = args.out / "FPGAS.jsonc"
+    print(f"Writing file {str(json_file)}")
+    write_json_file(json_file, fpgas_definitions)
+    # print(f"{json_file}: {data['part-count']} parts")
 
 
 if __name__ == "__main__":
