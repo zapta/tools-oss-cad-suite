@@ -88,7 +88,7 @@ jobs:
       # the linux suite, and copied into the three packages by build.py.
       - name: Generate the parts indexes
         run: |
-          python .github/workflows/parts_indexes.py \
+          python .github/workflows/fpgas_definitions.py \
               --yosys-release-tag "$YOSYS_RELEASE_TAG" \
               --release-tag "$RELEASE_TAG" \
               --out _packages/parts-indexes
