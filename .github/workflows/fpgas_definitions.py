@@ -99,7 +99,7 @@ def ice40_parts(suite):
                     },
                     # },
                 }
-    return (parts, 0)
+    return (parts, [])
 
 
 # =========================== ECP5 ===========================
@@ -143,7 +143,7 @@ def ecp5_parts(suite):
                 },
                 # },
             }
-    return (parts, 0)
+    return (parts, [])
 
 
 # =========================== GOWIN ===========================
@@ -206,7 +206,7 @@ def gowin_parts(suite):
     # -- nextpnr needs the family of a device that shares parts with another.
     shared = {d for devs in candidates.values() if len(devs) > 1 for d in devs}
 
-    skipped = 0
+    skipped = []
     parts = {}
     for vendor_part, devs in sorted(candidates.items()):
         if len(devs) > 1:
@@ -215,10 +215,14 @@ def gowin_parts(suite):
                 sys.exit(
                     f"gowin {vendor_part}: add a device to GOWIN_PREFERRED_DEVICES"
                 )
+
+        fpga_id = vendor_part.lower().replace("/", "-")
+
         device = devs[0]
         if device in GOWIN_UNUSABLE:
-            print(f"Skipping gowin device {device}")
-            skipped += 1
+            skipped.append(fpga_id)
+            # print(f"Skipping gowin device {fpga_id}")
+            # skipped += 1
             continue
 
         parts[vendor_part.lower().replace("/", "-")] = {
@@ -316,7 +320,7 @@ NOTES = {
 }
 
 
-def generate(suite) -> dict[str, dict]:
+def generate(suite) -> tuple[dict[str, dict], list[str]]:
     """Returns fpga definitions."""
     fpgas_definitions = {}
 
@@ -347,11 +351,15 @@ def generate(suite) -> dict[str, dict]:
             sys.exit(f"{arch}: no parts or invalid ids {bad_ids}")
         prefix_lines.extend(
             [
+                "//",
                 f"// {arch}",
-                f"//    Skipped   : {skipped}",
                 f"//    Generated : {len(parts)}",
+                f"//    Skipped   : {skipped}",
             ]
         )
+        for fpga_id in skipped:
+            prefix_lines.append(f"//    - {fpga_id}")
+
         for fpga_id, fpga_definition in parts.items():
             assert fpga_id not in fpga_definition, f"Duplicate fpga_id: {fpga_id}"
             fpgas_definitions[fpga_id] = fpga_definition
@@ -364,12 +372,12 @@ def generate(suite) -> dict[str, dict]:
         #     "note": NOTES[arch],
         #     "parts": parts,
         # }
-    return fpgas_definitions
+    return (fpgas_definitions, prefix_lines)
 
 
-def write_json_file(path, json_dict):
-    """Write a json file."""
-    path.write_text(json.dumps(json_dict, indent=2) + "\n", encoding="utf-8")
+# def write_json_file(path, json_dict):
+#     """Write a json file."""
+#     path.write_text(json.dumps(json_dict, indent=2) + "\n", encoding="utf-8")
 
 
 def download_suite(yosys_release_tag):
@@ -397,14 +405,21 @@ def main():
     args = parser.parse_args()
 
     suite = args.suite or download_suite(args.yosys_release_tag)
-    fpgas_definitions = generate(suite)
+    fpgas_definitions, prefix_lines = generate(suite)
     args.out.mkdir(parents=True, exist_ok=True)
     # for arch, data in fpgas_definitions.items():
     # json_file = args.out / f"{arch.upper()}-PARTS-INDEX.json"
-    json_file = args.out / "FPGAS.jsonc"
-    print(f"Writing file {str(json_file)}")
-    write_json_file(json_file, fpgas_definitions)
+    file_path = args.out / "FPGAS.jsonc"
+    print(f"Writing file {str(file_path)}")
+    # write_json_file(json_file, fpgas_definitions)
     # print(f"{json_file}: {data['part-count']} parts")
+    file_text = (
+        "\n".join(prefix_lines)
+        + "\n//\n"
+        + json.dumps(fpgas_definitions, indent=2)
+        + "\n"
+    )
+    file_path.write_text(file_text, encoding="utf-8")
 
 
 if __name__ == "__main__":
