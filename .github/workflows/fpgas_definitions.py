@@ -335,7 +335,6 @@ def generate(suite) -> tuple[dict[str, dict], list[str]]:
         "// Contains base FPGA definitions for the Apio's architectures "
         + ", ".join(architectures.keys())
         + ".",
-        "//",
     ]
 
     for arch, parts_function in architectures.items():
@@ -352,13 +351,13 @@ def generate(suite) -> tuple[dict[str, dict], list[str]]:
         prefix_lines.extend(
             [
                 "//",
-                f"// {arch}",
-                f"//    Generated : {len(parts)}",
-                f"//    Skipped   : {skipped}",
+                f"// {arch}:",
+                f"//   Generated : {len(parts)}",
+                f"//   Skipped   : {len(skipped)}",
             ]
         )
         for fpga_id in skipped:
-            prefix_lines.append(f"//    - {fpga_id}")
+            prefix_lines.append(f"//     - {fpga_id}")
 
         for fpga_id, fpga_definition in parts.items():
             assert fpga_id not in fpga_definition, f"Duplicate fpga_id: {fpga_id}"
